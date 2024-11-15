@@ -49,9 +49,17 @@ def check_sample_conformity(sample, reference_stats):
         'DMC_to_BDMC': (sample['DMC'] / sample['BDMC'] - reference_stats['DMC_to_BDMC_mean']) / reference_stats['DMC_to_BDMC_std']
     }
     
-    # Check if all z-scores are within an acceptable range (e.g., between -2 and 2)
-    is_within_bounds = all(abs(z) <= 2 for z in z_scores.values())
-    result = "Conforms to natural variation" if is_within_bounds else "Outlier - Does not conform to natural variation"
+    # Check if all Z-scores for components are within range
+    is_within_z = all(abs(z_scores[key]) <= 2 for key in ['Curcumin', 'DMC', 'BDMC'])
+    
+    # Check if all Z-scores for ratios are within range
+    is_within_ratios = all(abs(z_scores[key]) <= 2 for key in ['Curcumin_to_DMC', 'Curcumin_to_BDMC', 'DMC_to_BDMC'])
+    
+    # Final decision: Conformity requires both component and ratio Z-scores to be within range
+    if is_within_z and is_within_ratios:
+        result = "Conforms to natural variation"
+    else:
+        result = "Outlier - Does not conform to natural variation"
     
     return result, z_scores
 
