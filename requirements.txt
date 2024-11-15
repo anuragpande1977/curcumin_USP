@@ -1,2 +1,4 @@
-pandas==1.3.3
-streamlit==1.3.1
+pandas
+streamlit
+setuptools>=58.0.0
+wheel
