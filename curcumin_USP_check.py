@@ -1,12 +1,13 @@
 import pandas as pd
 import streamlit as st
 
-# Embed the new reference data directly from the PDF
+# Updated reference data with serial numbers
 REFERENCE_DATA = {
-    "Batch No": ["J200392", "J200526", "J200531", "J200552", "J200601", "J200602", "J200626", "J210013", "J210024", "J210117"],
+    "SL No": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "BDMC (Assay)": [2.67, 2.74, 2.71, 2.6, 2.84, 2.75, 2.55, 2.5, 2.56, 2.93],
     "Curcumin (Assay)": [75.74, 75.26, 75.32, 75.96, 75.49, 75.27, 76.26, 75.03, 75.17, 79.88],
     "DMC (Assay)": [16.12, 16.4, 16.3, 15.9, 16.37, 16.94, 16.51, 16.88, 16.9, 15.18],
-    "BDMC (Assay)": [2.67, 2.74, 2.71, 2.6, 2.84, 2.75, 2.55, 2.5, 2.56, 2.93]
+    "Total Curcuminoids (Assay)": [95.04, 95.29, 95.18, 95.29, 95.43, 95.75, 95.78, 95.08, 95.18, 95.22]
 }
 
 def load_reference_data():
@@ -78,3 +79,8 @@ def main():
         st.header("Results")
         st.write(" - **Conformity Result**: ", result)
         st.write(" - **Z-scores**: ")
+        st.json(z_scores)
+
+# Run the Streamlit app
+if __name__ == "__main__":
+    main()
