@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-# Updated reference data with serial numbers
+# Updated reference data with serial numbers and total curcuminoids
 REFERENCE_DATA = {
     "SL No": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     "BDMC (Assay)": [2.67, 2.74, 2.71, 2.6, 2.84, 2.75, 2.55, 2.5, 2.56, 2.93],
@@ -18,6 +18,7 @@ def load_reference_data():
     df['Curcumin_to_DMC'] = df['Curcumin (Assay)'] / df['DMC (Assay)']
     df['Curcumin_to_BDMC'] = df['Curcumin (Assay)'] / df['BDMC (Assay)']
     df['DMC_to_BDMC'] = df['DMC (Assay)'] / df['BDMC (Assay)']
+    df['Curcumin_to_Total'] = df['Curcumin (Assay)'] / df['Total Curcuminoids (Assay)']
     
     return df
 
@@ -35,7 +36,9 @@ def calculate_statistics(df):
         'Curcumin_to_BDMC_mean': df['Curcumin_to_BDMC'].mean(),
         'Curcumin_to_BDMC_std': df['Curcumin_to_BDMC'].std(),
         'DMC_to_BDMC_mean': df['DMC_to_BDMC'].mean(),
-        'DMC_to_BDMC_std': df['DMC_to_BDMC'].std()
+        'DMC_to_BDMC_std': df['DMC_to_BDMC'].std(),
+        'Curcumin_to_Total_mean': df['Curcumin_to_Total'].mean(),
+        'Curcumin_to_Total_std': df['Curcumin_to_Total'].std()
     }
 
 def check_sample_conformity(sample, reference_stats):
@@ -46,14 +49,13 @@ def check_sample_conformity(sample, reference_stats):
         'BDMC': (sample['BDMC'] - reference_stats['BDMC_mean']) / reference_stats['BDMC_std'],
         'Curcumin_to_DMC': (sample['Curcumin'] / sample['DMC'] - reference_stats['Curcumin_to_DMC_mean']) / reference_stats['Curcumin_to_DMC_std'],
         'Curcumin_to_BDMC': (sample['Curcumin'] / sample['BDMC'] - reference_stats['Curcumin_to_BDMC_mean']) / reference_stats['Curcumin_to_BDMC_std'],
-        'DMC_to_BDMC': (sample['DMC'] / sample['BDMC'] - reference_stats['DMC_to_BDMC_mean']) / reference_stats['DMC_to_BDMC_std']
+        'DMC_to_BDMC': (sample['DMC'] / sample['BDMC'] - reference_stats['DMC_to_BDMC_mean']) / reference_stats['DMC_to_BDMC_std'],
+        'Curcumin_to_Total': (sample['Curcumin'] / sample['Total_Curcuminoids'] - reference_stats['Curcumin_to_Total_mean']) / reference_stats['Curcumin_to_Total_std']
     }
     
-    # Check if all Z-scores for components are within range
+    # Check if all Z-scores for components and ratios are within range
     is_within_z = all(abs(z_scores[key]) <= 2 for key in ['Curcumin', 'DMC', 'BDMC'])
-    
-    # Check if all Z-scores for ratios are within range
-    is_within_ratios = all(abs(z_scores[key]) <= 2 for key in ['Curcumin_to_DMC', 'Curcumin_to_BDMC', 'DMC_to_BDMC'])
+    is_within_ratios = all(abs(z_scores[key]) <= 2 for key in ['Curcumin_to_DMC', 'Curcumin_to_BDMC', 'DMC_to_BDMC', 'Curcumin_to_Total'])
     
     # Final decision: Conformity requires both component and ratio Z-scores to be within range
     if is_within_z and is_within_ratios:
@@ -76,9 +78,10 @@ def main():
     curcumin = st.number_input("Curcumin (Assay)", min_value=0.0, max_value=100.0, value=0.0, step=0.01)
     dmc = st.number_input("DMC (Assay)", min_value=0.0, max_value=100.0, value=0.0, step=0.01)
     bdmc = st.number_input("BDMC (Assay)", min_value=0.0, max_value=100.0, value=0.0, step=0.01)
+    total_curcuminoids = st.number_input("Total Curcuminoids (Assay)", min_value=0.0, max_value=100.0, value=0.0, step=0.01)
     
     if st.button("Analyze"):
-        sample_input = {'Curcumin': curcumin, 'DMC': dmc, 'BDMC': bdmc}
+        sample_input = {'Curcumin': curcumin, 'DMC': dmc, 'BDMC': bdmc, 'Total_Curcuminoids': total_curcuminoids}
         
         # Check conformity
         result, z_scores = check_sample_conformity(sample_input, reference_stats)
@@ -92,3 +95,4 @@ def main():
 # Run the Streamlit app
 if __name__ == "__main__":
     main()
+
