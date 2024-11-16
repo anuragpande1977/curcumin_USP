@@ -53,17 +53,22 @@ def check_sample_conformity(sample, reference_stats):
         'Curcumin_to_Total': (sample['Curcumin'] / sample['Total_Curcuminoids'] - reference_stats['Curcumin_to_Total_mean']) / reference_stats['Curcumin_to_Total_std']
     }
     
-    # Check if all Z-scores for components and ratios are within range
+    # Track details of flagged components or ratios
+    flagged_details = []
+    for key, z in z_scores.items():
+        if abs(z) > 2:
+            flagged_details.append(f"{key} (Z-score: {z:.2f})")
+    
+    # Check overall conformity
     is_within_z = all(abs(z_scores[key]) <= 2 for key in ['Curcumin', 'DMC', 'BDMC'])
     is_within_ratios = all(abs(z_scores[key]) <= 2 for key in ['Curcumin_to_DMC', 'Curcumin_to_BDMC', 'DMC_to_BDMC', 'Curcumin_to_Total'])
     
-    # Final decision: Conformity requires both component and ratio Z-scores to be within range
     if is_within_z and is_within_ratios:
         result = "Conforms to natural variation"
     else:
         result = "Outlier - Does not conform to natural variation"
     
-    return result, z_scores
+    return result, z_scores, flagged_details
 
 # Streamlit App
 def main():
@@ -84,15 +89,23 @@ def main():
         sample_input = {'Curcumin': curcumin, 'DMC': dmc, 'BDMC': bdmc, 'Total_Curcuminoids': total_curcuminoids}
         
         # Check conformity
-        result, z_scores = check_sample_conformity(sample_input, reference_stats)
+        result, z_scores, flagged_details = check_sample_conformity(sample_input, reference_stats)
         
         # Display results
         st.header("Results")
         st.write(" - **Conformity Result**: ", result)
         st.write(" - **Z-scores**: ")
         st.json(z_scores)
+        
+        if flagged_details:
+            st.write(" - **Flagged Parameters**:")
+            for detail in flagged_details:
+                st.write(f"   - {detail}")
+        else:
+            st.write(" - All parameters are within acceptable limits.")
 
 # Run the Streamlit app
 if __name__ == "__main__":
     main()
+
 
